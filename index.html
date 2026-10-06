@@ -167,38 +167,31 @@
 </footer>
 
 <script>
-  // Turnstile: el botón solo se habilita cuando la verificación es exitosa
-  var tsVerified = false;
-  function onTurnstileOk() {
+  // Turnstile: el botón solo se habilita cuando la verificación es exitosa.
+  // El token se valida en el servidor (/api/verify) y solo entonces llegan los módulos.
+  var tsVerified = false, tsToken = '';
+  function onTurnstileOk(token) {
     tsVerified = true;
+    tsToken = token;
     var b = document.getElementById('btnStart');
     if (b.getAttribute('aria-expanded') !== 'true') b.disabled = false;
     document.getElementById('tsHint').textContent = 'Verificación completada ✓';
   }
   function onTurnstileReset() {
     tsVerified = false;
+    tsToken = '';
     var b = document.getElementById('btnStart');
     if (b.getAttribute('aria-expanded') !== 'true') b.disabled = true;
     document.getElementById('tsHint').textContent = 'Completa la verificación para continuar.';
   }
 
   (function () {
-    var MODULES = [
-      {n:2, id:'rVdRQhKXJT8', title:'Cómo configurar tus márgenes de ganancias',
-       note:'Los márgenes aplicados son solo de prueba para ejemplificar. Los cálculos y márgenes aplicados a los productos son en su totalidad independientes: se aplica la estrategia del vendedor.',
-       desc:'Cómo configurar tus márgenes de ganancias y compartir tu tienda.'},
-      {n:3, id:'X-fHb4V8ing', title:'Editar márgenes y crear promociones',
-       desc:'Cómo editar tus márgenes de ganancias y crear tus promociones.'},
-      {n:4, id:'uJUODiwrqu0', title:'Producto de regalo',
-       desc:'Cómo configurar un producto de regalo.'},
-      {n:5, id:'Vl4-iUk5PUw', title:'Precios manuales y compartir de manera individual',
-       desc:'Cómo editar y configurar precios manuales y compartir un producto de manera individual.'}
-    ];
-
+    // Los módulos llegan del servidor (functions/api/verify.js) tras validar Turnstile
     var isServed = /^https?:$/.test(location.protocol);
     document.getElementById('year').textContent = new Date().getFullYear();
 
     var wrap = document.getElementById('modules');
+    function renderModules(MODULES) {
     MODULES.forEach(function (m) {
       var el = document.createElement('article');
       el.className = 'module';
@@ -214,6 +207,7 @@
         '</div></div></div>';
       wrap.appendChild(el);
     });
+    }
 
     function loadVideo(box) {
       if (box.querySelector('iframe')) return;
@@ -246,14 +240,34 @@
     });
 
     var btn = document.getElementById('btnStart'), curtain = document.getElementById('curtain');
+    function fail(msg) {
+      btn.innerHTML = 'Aceptar y Continuar <span class="arrow" aria-hidden="true">→</span>';
+      onTurnstileReset();
+      document.getElementById('tsHint').textContent = msg;
+      if (window.turnstile) turnstile.reset();
+    }
+
     btn.addEventListener('click', function () {
-      if (!tsVerified) return;
-      curtain.classList.add('open');
-      toggle(wrap.firstChild, true);            // abre el primer módulo
-      btn.setAttribute('aria-expanded', 'true');
+      if (!tsVerified || !tsToken) return;
       btn.disabled = true;
-      btn.innerHTML = 'Módulos desplegados ✓';
-      setTimeout(function () { curtain.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150);
+      btn.innerHTML = 'Verificando…';
+
+      fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: tsToken, page: 'index' })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.ok || !data.modules) { fail('No pudimos validar la verificación. Inténtalo de nuevo.'); return; }
+          if (!wrap.firstChild) renderModules(data.modules);
+          curtain.classList.add('open');
+          toggle(wrap.firstChild, true);            // abre el primer módulo
+          btn.setAttribute('aria-expanded', 'true');
+          btn.innerHTML = 'Módulos desplegados ✓';
+          setTimeout(function () { curtain.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150);
+        })
+        .catch(function () { fail('Error de conexión. Inténtalo de nuevo.'); });
     });
   })();
 </script>
