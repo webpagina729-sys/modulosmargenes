@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revende Ways | Módulos de configuración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--blue:#0a5be8;--blue-dark:#0847b5;--green:#4cc43a;--black:#0a0a0a;--ink:#111827;--muted:#475569;--line:#d9e2f1;--bg:#eef3fb;--max:960px;--pad:16px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;letter-spacing:-.005em}
+  body:before{content:"";display:block;height:8px;background:linear-gradient(90deg,var(--black) 0 30%,var(--blue) 30% 65%,var(--green) 65%)}
+  .wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+
+  .banner{padding-top:var(--pad)}
+  .banner img{display:block;width:100%;height:auto;border-radius:14px;border:2px solid var(--black)}
+  .banner .fallback{display:none;background:var(--black);color:#fff;border-radius:14px;border-bottom:6px solid var(--green);padding:44px 24px;text-align:center;font-size:1.6rem;font-weight:600}
+
+  .intro{margin-top:16px;background:#fff;border:2px solid var(--black);border-radius:14px;padding:24px 22px 46px;box-shadow:6px 6px 0 var(--blue)}
+  .intro h1{font-size:1.3rem;font-weight:600;line-height:1.3;letter-spacing:-.015em;margin-bottom:12px}
+  .intro p{color:var(--muted);margin-bottom:12px}
+  .intro p:last-child{margin-bottom:0;color:var(--ink);font-weight:500}
+
+  .divider{display:flex;align-items:center;gap:14px;position:relative;z-index:2;transform:translateY(-18px);margin-bottom:-18px}
+  .divider:before,.divider:after{content:"";flex:1;height:5px;border-radius:5px}
+  .divider:before{background:var(--blue)} .divider:after{background:var(--green)}
+  .btn{display:inline-block;border:0;cursor:pointer;font:inherit;font-weight:300;letter-spacing:.3px;text-decoration:none;text-align:center;padding:8px 44px;min-width:230px;border-radius:8px;color:#fff;background:#000;line-height:1.4;transition:background .2s,transform .1s}
+  .btn:hover{background:#222} .btn:active{transform:scale(.98)}
+  .btn:focus-visible,.m-head:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .btn[disabled]{background:#444;cursor:default}
+
+  .curtain{display:grid;grid-template-rows:0fr;transition:grid-template-rows .7s ease}
+  .curtain.open{grid-template-rows:1fr}
+  .curtain>.inner{overflow:hidden;min-height:0}
+  .curtain .pad{padding:38px 8px 0 0}
+
+  .module{background:#fff;border:2px solid var(--black);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 var(--green);margin-bottom:26px}
+  .m-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;font:inherit;color:#fff;background:var(--black);border:0;border-bottom:5px solid var(--green);padding:16px 22px;cursor:pointer}
+  .pill{display:inline-block;background:var(--blue);color:#fff;font-weight:500;font-size:.85rem;padding:4px 14px;border-radius:999px;line-height:1.35}
+  .m-head h2{font-size:1.15rem;font-weight:600;line-height:1.35;letter-spacing:-.01em;margin-top:8px}
+  .chev{flex:none;width:12px;height:12px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg);transition:transform .3s;margin-right:4px}
+  .module.open .chev{transform:rotate(-135deg)}
+  .m-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s ease}
+  .module.open .m-body{grid-template-rows:1fr}
+  .m-body>div{overflow:hidden;min-height:0}
+  .m-in{padding:20px 22px 24px}
+  .note{background:#f1f6ff;border-left:4px solid var(--blue);padding:10px 14px;border-radius:6px;font-size:.92rem;color:var(--muted);margin-bottom:16px}
+  .label{font-weight:600;color:var(--blue);margin-bottom:4px}
+  .m-in p.desc{margin-bottom:18px;color:var(--muted)}
+  .video{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;border:2px solid var(--black)}
+  .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+  .closing{margin-top:6px;text-align:center;background:#fff;border:2px solid var(--black);border-top:8px solid var(--blue);border-radius:14px;padding:22px;box-shadow:6px 6px 0 var(--blue)}
+  .closing p{font-weight:600;margin-bottom:16px}
+  .after{height:14px}
+
+  footer{margin-top:16px;background:#000;border-top:5px solid var(--green);color:#fff;padding:22px var(--pad)}
+  .foot-inner{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 18px;text-align:center}
+  .foot-inner .brand{font-weight:600;font-size:1.05rem;letter-spacing:.06em}
+  .foot-inner .sep{width:1px;height:16px;background:#555}
+  .foot-inner .rights{font-weight:300;font-size:.9rem;color:#c9d1e0;letter-spacing:.02em}
+  @media (max-width:520px){.foot-inner{flex-direction:column}.foot-inner .sep{display:none}}
+
+  @media (min-width:700px){
+    :root{--pad:24px}
+    .intro{padding:30px 34px 48px} .intro h1{font-size:1.6rem}
+    .m-head{padding:18px 32px} .m-head h2{font-size:1.35rem}
+    .m-in{padding:26px 32px 30px}
+  }
+  @media (max-height:480px) and (orientation:landscape){.intro{padding:16px 22px 36px}}
+  @media (prefers-reduced-motion:reduce){.curtain,.m-body,.chev{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="wrap banner">
+  <img src="bannervidos.png" alt="Revende Ways" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+  <div class="fallback">Revende Ways</div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Antes de comenzar</h1>
+    <p>Los márgenes de ganancia, las instrucciones y los ejemplos que vas a ver en cada módulo son solo de prueba. Sirven para enseñarte a utilizar Revende Ways.</p>
+    <p>Una vez que tengas tu tienda, es totalmente libre e independiente: vos decidís los márgenes de ganancia, los combos y las promociones que quieras aplicar.</p>
+    <p>Teniendo esto en cuenta, continuemos.</p>
+  </section>
+
+  <div class="divider">
+    <button class="btn" id="btnStart" aria-expanded="false" aria-controls="curtain">Aceptar y Continuar</button>
+  </div>
+
+  <div class="curtain" id="curtain">
+    <div class="inner"><div class="pad">
+      <div id="modules"></div>
+      <section class="closing">
+        <p>Teniendo en cuenta esta información, ve a configurar tu tienda.</p>
+        <a class="btn" href="https://mitienda.revendeways.shop/">Ir a Mi Tienda</a>
+      </section>
+      <div class="after"></div>
+    </div></div>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span class="brand">Revende Ways</span>
+    <span class="sep"></span>
+    <span class="rights">&copy; Todos los derechos reservados</span>
+  </div>
+</footer>
+
+<script>
+  var MODULES = [
+    {n:2, id:'rVdRQhKXJT8', title:'Cómo configurar tus márgenes de ganancias',
+     note:'Los márgenes aplicados son solo de prueba para ejemplificar. Los cálculos y márgenes aplicados a los productos son en su totalidad independientes: se aplica la estrategia del vendedor.',
+     desc:'Cómo configurar tus márgenes de ganancias y compartir tu tienda.'},
+    {n:3, id:'X-fHb4V8ing', title:'Editar márgenes y crear promociones',
+     desc:'Cómo editar tus márgenes de ganancias y crear tus promociones.'},
+    {n:4, id:'uJUODiwrqu0', title:'Producto de regalo',
+     desc:'Cómo configurar un producto de regalo.'},
+    {n:5, id:'Vl4-iUk5PUw', title:'Precios manuales y compartir de manera individual',
+     desc:'Cómo editar y configurar precios manuales y compartir un producto de manera individual.'}
+  ];
+
+  var wrap = document.getElementById('modules');
+  MODULES.forEach(function (m) {
+    var el = document.createElement('article');
+    el.className = 'module';
+    el.innerHTML =
+      '<button class="m-head" aria-expanded="false"><div><span class="pill">Módulo Nº ' + m.n + '</span><h2>' + m.title + '</h2></div><span class="chev"></span></button>' +
+      '<div class="m-body"><div><div class="m-in">' +
+      (m.note ? '<div class="note">' + m.note + '</div>' : '') +
+      '<div class="label">En este módulo verás:</div><p class="desc">' + m.desc + '</p>' +
+      '<div class="label">Video:</div><div class="video" data-id="' + m.id + '" data-title="Módulo ' + m.n + '"></div>' +
+      '</div></div></div>';
+    wrap.appendChild(el);
+  });
+
+  function toggle(mod, force) {
+    var open = typeof force === 'boolean' ? force : !mod.classList.contains('open');
+    mod.classList.toggle('open', open);
+    mod.querySelector('.m-head').setAttribute('aria-expanded', open);
+    var box = mod.querySelector('.video');
+    if (open && !box.firstChild) {            // el video carga solo al desplegar
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + box.dataset.id + '?rel=0';
+      f.title = box.dataset.title;
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      box.appendChild(f);
+    }
+  }
+  wrap.addEventListener('click', function (e) {
+    var h = e.target.closest('.m-head');
+    if (h) toggle(h.parentNode);
+  });
+
+  var btn = document.getElementById('btnStart'), curtain = document.getElementById('curtain');
+  btn.addEventListener('click', function () {
+    curtain.classList.add('open');
+    toggle(wrap.firstChild, true);            // abre el primer módulo
+    btn.setAttribute('aria-expanded', 'true');
+    btn.disabled = true;
+    btn.textContent = 'Módulos desplegados';
+    setTimeout(function () { curtain.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 150);
+  });
+</script>
+</body>
+</html>
