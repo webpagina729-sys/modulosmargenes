@@ -140,6 +140,7 @@
       <div class="cf-turnstile" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-language="es" data-theme="light"
            data-callback="onTurnstileOk" data-expired-callback="onTurnstileReset" data-error-callback="onTurnstileReset"></div>
       <p class="ts-hint" id="tsHint">Completa la verificación para continuar.</p>
+      <p class="ts-hint" id="tsErr" style="color:#b91c1c;font-weight:500" hidden></p>
     </div>
   </section>
 
@@ -243,7 +244,9 @@
     function fail(msg) {
       btn.innerHTML = 'Aceptar y Continuar <span class="arrow" aria-hidden="true">→</span>';
       onTurnstileReset();
-      document.getElementById('tsHint').textContent = msg;
+      var e = document.getElementById('tsErr');
+      e.textContent = msg;
+      e.hidden = false;
       if (window.turnstile) turnstile.reset();
     }
 
@@ -257,9 +260,14 @@
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ token: tsToken, page: 'index' })
       })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          return r.text().then(function (t) {
+            try { return JSON.parse(t); }
+            catch (e) { return { ok: false, error: 'http_' + r.status + '_sin_funcion' }; }
+          });
+        })
         .then(function (data) {
-          if (!data.ok || !data.modules) { fail('No pudimos validar la verificación. Inténtalo de nuevo.'); return; }
+          if (!data.ok || !data.modules) { fail('No pudimos validar la verificación. Código: ' + (data.error || 'desconocido')); return; }
           if (!wrap.firstChild) renderModules(data.modules);
           curtain.classList.add('open');
           toggle(wrap.firstChild, true);            // abre el primer módulo
@@ -267,7 +275,7 @@
           btn.innerHTML = 'Módulos desplegados ✓';
           setTimeout(function () { curtain.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150);
         })
-        .catch(function () { fail('Error de conexión. Inténtalo de nuevo.'); });
+        .catch(function () { fail('Error de conexión con /api/verify. Código: sin_respuesta'); });
     });
   })();
 </script>
